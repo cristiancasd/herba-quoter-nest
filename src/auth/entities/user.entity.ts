@@ -1,5 +1,5 @@
-import { Category } from "src/categories/entities/category.entity";
-import { Product } from "src/products/entities/product.entity";
+import { Category } from "../../categories/entities/category.entity";
+import { Product } from "../../products/entities/product.entity";
 import {OneToMany, BeforeInsert, BeforeUpdate, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 
@@ -13,7 +13,9 @@ export class User {
     })
     email: string;
     
-    @Column('text')
+    @Column('text',{
+      //  select: false, //En find y querybuilder no se incluye
+    })
     password: string;
     
     @Column('text')
@@ -24,11 +26,11 @@ export class User {
     })
     isActive: boolean;
     
-    @Column('text',{
-        array: true,
-        default: ['user']
-    })
-    roles: string[];
+    @Column('text'
+        ,{default: 'user'}
+        //,{array: true, default: 'user'}
+    )
+    rol: string;
 
     @Column('text',{
         default: 'Colombia',
@@ -40,9 +42,9 @@ export class User {
     })
     profilePhoto: string;
 
-    @Column('text',{
-        default: 'Supervisor',
-    })
+    @Column('text'    
+        //,{default: 'supervisor',}
+    )
     herbalifeLevel: string;
 
 
@@ -50,7 +52,10 @@ export class User {
     @BeforeInsert()
     checkFieldsBeforeInsert(){
         this.email=this.email.toLowerCase().trim();
+        this.fullName=this.fullName.toUpperCase().trim();
     }
+
+
     @BeforeUpdate()
     checkFieldsBeforeUpdate(){
         this.checkFieldsBeforeInsert()
