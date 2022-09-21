@@ -1,10 +1,14 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, ParseUUIDPipe, Query } from '@nestjs/common';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { AuthService } from './auth.service';
+import { Auth } from './decorators/auth.decorator';
+import { GetUser } from './decorators/get-user.decorator';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './entities/user.entity';
+import { ValidRoles } from './interfaces/valid-roles';
 
 @Controller('auth') 
 export class AuthController {
@@ -22,6 +26,7 @@ export class AuthController {
 
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   findAll(@Query() paginationDto: PaginationDto ) {
     return this.authService.findAll(paginationDto);
   }
@@ -32,9 +37,8 @@ export class AuthController {
     return this.authService.findOne(term);
   }
 
-
-
   @Patch('admin/:id')
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   update(@Param('id', ParseUUIDPipe) id: string, 
   @Body() updateAuthDto: UpdateAuthDto) 
   {
@@ -42,14 +46,21 @@ export class AuthController {
   }
 
   @Patch(':id')
+  @Auth()
   updateUser(@Param('id', ParseUUIDPipe) id: string, 
-  @Body() updateUserDto: UpdateUserDto) 
+  @Body() updateUserDto: UpdateUserDto,
+  @GetUser(/*Aquí va la Data*/)user: User) 
   {
-    return this.authService.updateUser(id, updateUserDto);
+    return this.authService.updateUser(id, updateUserDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.authService.remove(id);
+  @Auth()
+  
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,    
+    @GetUser(/*Aquí va la Data*/)user: User) 
+  {
+    return this.authService.remove(id, user);
   }
 }

@@ -128,38 +128,32 @@ export class AuthService {
   }
 
 
-  async updateUser(id: string, updateAuthDto: UpdateUserDto) {  
+  async updateUser(id: string, updateAuthDto: UpdateUserDto, user: User) {  
       
     const {password, newPassword, ...toUpdate}=updateAuthDto;
 
-    console.log('updateAuthDto ', updateAuthDto)
-    console.log('newPassword ',newPassword)
-
-    let user=await this.userRepository.preload({
+    let userDB=await this.userRepository.preload({
       id,
       ...toUpdate
     });
-
-    console.log('user ', user)
-
-
-    if(!user) throw new NotFoundException(`User with id ${id} not found`) 
     
+    if (userDB.id!=user.id)
+      throw new UnauthorizedException('You are trying to change a user that is not yours')
     
-    if(!bcrypt.compareSync(password, user.password))
+    if(!userDB) throw new NotFoundException(`UserDB with id ${id} not found`)  
+    if(!bcrypt.compareSync(password, userDB.password))
       throw new UnauthorizedException('Credentials are not valid (password)')
     
-      console.log('password correcto ')
     try{ 
       
-      let userUpdate ={password: user.password} ;
+      let userUpdate ={password: userDB.password} ;
 
       (newPassword)
-        ? userUpdate={ ...user, ...toUpdate,
+        ? userUpdate={ ...userDB, ...toUpdate,
         password: bcrypt.hashSync(newPassword, 10)
         }
 
-        : userUpdate={ ...user,  ...toUpdate, password: user.password     
+        : userUpdate={ ...userDB,  ...toUpdate, password: userDB.password     
         }
 
 
@@ -177,13 +171,18 @@ export class AuthService {
   }
 
 
-  async remove(id: string) {    
-    let user=await this.userRepository.preload({id});
-    console.log('user es ..',user);
-    if(!user) throw new NotFoundException(`User with id ${id} not found`)
+  async remove(id: string, user: User) {    
+    let userDB=await this.userRepository.preload({id});
+    
+    if(user.rol=='user'){
+      if(user.id!=userDB.id) 
+        throw new UnauthorizedException('You are trying to delete a user that is not yours')
+    }
+    
+    if(!userDB) throw new NotFoundException(`userDB with id ${id} not found`)
     try{
       const userUpdate={
-        ...user,
+        ...userDB,
        isActive: false,
       }
       await this.userRepository.save(userUpdate);

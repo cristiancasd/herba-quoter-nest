@@ -30,8 +30,4 @@ export class Category {
         (product)=>product,
     )
     product: Product;
-
-    
-
-
 }
