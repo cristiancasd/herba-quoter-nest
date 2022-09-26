@@ -1,26 +1,161 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/auth/entities/user.entity';
+import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Category } from './entities/category.entity';
+import { validate as isUUID } from 'uuid'
+
 
 @Injectable()
 export class CategoriesService {
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ){}
+
+  async create(createCategoryDto: CreateCategoryDto, user: User) {
+    console.log('createCategoryDto', createCategoryDto)
+    try{
+      const category=this.categoryRepository.create({
+        ...createCategoryDto,
+      });
+      await this.categoryRepository.save({...category, user});
+      return category;
+
+    }catch(error){
+      this.handleDBErrors(error)
+    }
   }
 
-  findAll() {
-    return `This action returns all categories`;
+  async findAll(paginationDto) {
+    const {limit=10, offset=0}=paginationDto;
+    const categories=await this.categoryRepository.find({   
+      where: {
+        isactive: true,
+    },
+      take: limit,
+      skip: offset,      
+    });
+
+    if(!categories || categories.length===0) 
+        throw new NotFoundException(`Categories dont have data`) 
+    
+    return categories.map((category)=>{
+      const {user, ...restCategory}=category;
+      const {id, fullname}=user;
+      return {
+        ...restCategory,
+        user:{
+          id, fullname
+        }            
+      }
+    }) 
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} category`;
+  async findOne(term: string) {
+    let categories: Category[];
+    const queryBuilder=this.categoryRepository.createQueryBuilder('us');
+    isUUID(term)
+      ? categories=[await this.categoryRepository.findOneBy({id: term, isactive: true})]
+      : categories=await queryBuilder.where('UPPER(title) =:title and isactive =:isactive' ,{
+        title: term.toUpperCase(),
+        isactive: true,
+        })
+        .getMany(); 
+       
+
+
+    if(!categories || categories.length===0 || categories[0]==null) 
+      throw new NotFoundException(`Categories with term ${term} not found`);
+      console.log('la categoría es --- ',  categories)    
+      
+      let result= categories.map(category  =>{
+        console.log('category...',category);
+        return category;
+        //const {user, ...restCategory}=category;
+        //TODO Obtener el usuario en wl Query
+      }) 
+
+
+    const categoryById= await this.categoryRepository.findOneBy({id: result[0].id, isactive: true})
+    const {user, ...restCategory}=categoryById;
+    const {id, fullname}=user
+    return {
+      ...restCategory,
+      user:{id,fullname}
+    } 
   }
 
-  update(id: number, updateCategoryDto: UpdateCategoryDto) {
-    return `This action updates a #${id} category`;
+  async update(id: string, updateCategoryDto: UpdateCategoryDto, user: User) {
+    let category=await this.categoryRepository.preload({
+      id,
+      ...updateCategoryDto,
+    });
+    if(!category) throw new NotFoundException(`category with id ${id} not found`)
+    if(!category.isactive) throw new BadRequestException(`category with id ${id} is Inactive`);
+    try{      
+      await this.categoryRepository.save({ ...category,user});      
+      return category;
+    }catch(error){
+      this.handleDBErrors(error)
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} category`;
+  async remove(id: string, user: User) {
+    let category=await this.categoryRepository.preload({id});
+    if(!category) throw new NotFoundException(`category with id ${id} not found`)
+    if(!category.isactive) throw new BadRequestException(`category with id ${id} is Inactive`);
+    try{
+      const categoryUpdate={
+        ...category,
+       isactive: false,
+      }
+      await this.categoryRepository.save({...categoryUpdate,user});
+      return;
+    }catch(error){
+      this.handleDBErrors(error)
+    }
+  }
+
+  async reactive(term: string, user: User) {
+    let category: Category;
+    let id=term;
+    if(!isUUID(term)){
+      let categoryTemporal:Category;
+      const queryBuilder=this.categoryRepository.createQueryBuilder('us');
+      categoryTemporal=await queryBuilder.where('UPPER(title) =:title' ,{
+        title: term.toUpperCase(),
+        })
+        .getOne(); 
+      if(!categoryTemporal) throw new NotFoundException(`category with title ${term} not found`)
+      id=categoryTemporal.id
+    }
+
+    category=await this.categoryRepository.preload({id});
+
+    
+    if(!category) throw new NotFoundException(`category with id ${id} not found`)
+    if(category.isactive) 
+      throw new BadRequestException(`category with id ${id} is active, it don't need to be reactive`);
+    try{
+      const categoryUpdate={
+        ...category,
+       isactive: true,
+      }
+      await this.categoryRepository.save({...categoryUpdate,user});
+      return categoryUpdate
+    }catch(error){
+      this.handleDBErrors(error)
+    }
+  }
+
+  private handleDBErrors(error: any){
+    if(error.code==='23505')
+      throw new BadRequestException(error.detail);
+    console.log(error)
+    throw new InternalServerErrorException('Please check server logs')
   }
 }

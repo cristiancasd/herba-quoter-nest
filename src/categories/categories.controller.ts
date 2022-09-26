@@ -1,34 +1,61 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from 'src/auth/entities/user.entity';
+import { ValidRoles } from 'src/auth/interfaces/valid-roles';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
-@Controller('categories')
+@Controller('categories') 
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    ) {}
 
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
+  create(
+    @Body() createCategoryDto: CreateCategoryDto,
+    @GetUser()user: User) {
+    return this.categoriesService.create(createCategoryDto, user);
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query() paginationDto: PaginationDto ) {
+    return this.categoriesService.findAll(paginationDto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  @Get(':term')
+  findOne(@Param('term') term: string) {
+    return this.categoriesService.findOne(term);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
+  updateCategory(
+    @Param('id', ParseUUIDPipe) id: string,  
+    @Body() updateCategoryDto: UpdateCategoryDto,
+    @GetUser()user: User) {
+    return this.categoriesService.update(id, updateCategoryDto, user);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
+  remove(
+    @Param('id', ParseUUIDPipe) id: string,  
+    @Body() updateCategoryDto: UpdateCategoryDto,
+    @GetUser()user: User) {
+    return this.categoriesService.remove(id, user);
+  }
+
+  @Post(':term')
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
+  reactive(
+    @Param('term') term: string,  
+    //@Body() updateCategoryDto: UpdateCategoryDto,
+    @GetUser()user: User) {
+    return this.categoriesService.reactive(term, user);
   }
 }

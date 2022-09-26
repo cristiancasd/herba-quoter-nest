@@ -37,7 +37,7 @@ export class AuthController {
     return this.authService.findOne(term);
   }
 
-  @Patch('admin/:id')
+  @Patch('admin/:id')  
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   update(@Param('id', ParseUUIDPipe) id: string, 
   @Body() updateAuthDto: UpdateAuthDto) 
@@ -47,20 +47,31 @@ export class AuthController {
 
   @Patch(':id')
   @Auth()
-  updateUser(@Param('id', ParseUUIDPipe) id: string, 
+  updateUser(
+    @Param('id', ParseUUIDPipe) id: string, 
   @Body() updateUserDto: UpdateUserDto,
   @GetUser(/*Aquí va la Data*/)user: User) 
   {
     return this.authService.updateUser(id, updateUserDto, user);
   }
-
+ 
   @Delete(':id')
-  @Auth()
-  
+  @Auth()  
   remove(
     @Param('id', ParseUUIDPipe) id: string,    
     @GetUser(/*Aquí va la Data*/)user: User) 
   {
     return this.authService.remove(id, user);
   }
+
+  @Post(':term')
+  @Auth(ValidRoles.admin, ValidRoles.superAdmin)
+  reactive(
+    @Param('term') term: string,    
+    //@GetUser(/*Aquí va la Data*/)user: User
+    ) 
+  {
+    return this.authService.reactive(term);
+  }
+
 }

@@ -19,12 +19,12 @@ export class User {
     password: string;
     
     @Column('text')
-    fullName: string;
+    fullname: string;
     
     @Column('bool',{
         default: true,
     })
-    isActive: boolean;
+    isactive: boolean;
     
     @Column('text'
         ,{default: 'user'}
@@ -37,22 +37,22 @@ export class User {
     })
     country: string;
 
-    @Column('text',{
+    @Column('text',{ 
         default: '',
     })
-    profilePhoto: string;
+    profilephoto: string;
 
     @Column('text'    
         //,{default: 'supervisor',}
     )
-    herbalifeLevel: string;
+    herbalifelevel: string;
 
 
 
     @BeforeInsert()
     checkFieldsBeforeInsert(){
         this.email=this.email.toLowerCase().trim();
-        this.fullName=this.fullName.toUpperCase().trim();
+        this.fullname=this.fullname.toUpperCase().trim();
     }
 
 
@@ -60,7 +60,14 @@ export class User {
     checkFieldsBeforeUpdate(){
         this.checkFieldsBeforeInsert()
     }
+    
+    @OneToMany(
+        ()=>Category,
+        (categorie)=>categorie,
+        //{eager: true} //cargar automaticamente la relación, que en el fron muestre el
 
+    )
+    categorie: Category;
 
     @OneToMany(
         ()=>Product,
@@ -68,9 +75,5 @@ export class User {
     )
     product: Product;
 
-    @OneToMany(
-        ()=>Category,
-        (categorie)=>categorie,
-    )
-    categorie: Category;
+    
 }

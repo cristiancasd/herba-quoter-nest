@@ -46,7 +46,7 @@ export class AuthService {
     const {password, email}=loginUserDto;
     const user=await this.userRepository.findOne({
       where: {email},
-      select: {email: true, password: true, isActive: true }, //Si no hago esto no me devuelve la contraseña
+      select: {email: true, password: true, isactive: true }, //Si no hago esto no me devuelve la contraseña
     });
     if(!user)
       throw new UnauthorizedException('Credentials are not valid (email)')
@@ -54,7 +54,7 @@ export class AuthService {
     if(!bcrypt.compareSync(password, user.password))
       throw new UnauthorizedException('Credentials are not valid (password)')
     
-    if(!user.isActive)
+    if(!user.isactive)
       throw new UnauthorizedException('Inactive User - talk with the admin')
 
       return {
@@ -68,12 +68,16 @@ export class AuthService {
   async findAll(paginationDto: PaginationDto ) {
     const {limit=10, offset=0}=paginationDto;
     const users=await this.userRepository.find({
+      where: {
+        isactive: true,
+    },
       take: limit,
       skip: offset,
       relations: {
       }
     });
-    
+    if(!users|| users.length==0) throw new NotFoundException(`Users not found`)
+
     return users.map((user)=>{
       let {password, ...resto}=user;
       return resto
@@ -88,12 +92,13 @@ export class AuthService {
     
     isUUID(term)
       ? users=[await this.userRepository.findOneBy({id: term})]
-      : users=await queryBuilder.where('email =:email or rol =:rol',{
+      : users=await queryBuilder.where('(email =:email or rol =:rol) and isactive =:isactive',{
         email: term.toLowerCase(),
         rol: term.toLowerCase(),
+        isactive: true,
         })
         .getMany();        
-    if(!users) throw new NotFoundException(`Users with term ${term} not found`)
+    if(!users|| users.length==0) throw new NotFoundException(`Users with term ${term} not found`)
 
     return users.map((user)=>{
       let {password, ...resto}=user;
@@ -111,7 +116,6 @@ export class AuthService {
     });
     if(!user) throw new NotFoundException(`User with id ${id} not found`)
     try{
-
       let userUpdate={password:user.password};
       (password)
         ? userUpdate={ ...user, ...toUpdate, password: bcrypt.hashSync(password, 10)}
@@ -129,18 +133,17 @@ export class AuthService {
 
 
   async updateUser(id: string, updateAuthDto: UpdateUserDto, user: User) {  
-      
     const {password, newPassword, ...toUpdate}=updateAuthDto;
 
     let userDB=await this.userRepository.preload({
       id,
       ...toUpdate
     });
+    if(!userDB) throw new NotFoundException(`UserDB with id ${id} not found`)  
     
     if (userDB.id!=user.id)
       throw new UnauthorizedException('You are trying to change a user that is not yours')
     
-    if(!userDB) throw new NotFoundException(`UserDB with id ${id} not found`)  
     if(!bcrypt.compareSync(password, userDB.password))
       throw new UnauthorizedException('Credentials are not valid (password)')
     
@@ -173,17 +176,17 @@ export class AuthService {
 
   async remove(id: string, user: User) {    
     let userDB=await this.userRepository.preload({id});
-    
+    if(!userDB) throw new NotFoundException(`userDB with id ${id} not found`);
+    if(!userDB.isactive) 
+      throw new BadRequestException(`user with id ${id} is inactive, it don't need to be remove`);
     if(user.rol=='user'){
       if(user.id!=userDB.id) 
         throw new UnauthorizedException('You are trying to delete a user that is not yours')
-    }
-    
-    if(!userDB) throw new NotFoundException(`userDB with id ${id} not found`)
+    }    
     try{
       const userUpdate={
         ...userDB,
-       isActive: false,
+       isactive: false,
       }
       await this.userRepository.save(userUpdate);
       return;
@@ -191,6 +194,43 @@ export class AuthService {
       this.handleDBErrors(error)
     } 
   }
+
+
+  async reactive(term: string) {    
+    let user: User;
+    let id=term;
+    if(!isUUID(term)){
+      let userTemporal:User;
+      const queryBuilder=this.userRepository.createQueryBuilder('us');
+      userTemporal=await queryBuilder.where('UPPER(email) =:email' ,{
+        email: term.toUpperCase(),
+        })
+        .getOne(); 
+      if(!userTemporal) throw new NotFoundException(`user with email ${term} not found`)
+      id=userTemporal.id
+    }
+
+    
+    let userDB=await this.userRepository.preload({id});    
+    if(!userDB) throw new NotFoundException(`userDB with id ${id} not found`)
+    if(userDB.isactive) 
+    throw new BadRequestException(`user with id ${id} is active, it don't need to be reactive`);
+    try{
+      const userUpdate={
+        ...userDB,
+       isactive: true,
+      }
+      await this.userRepository.save(userUpdate);
+
+      return{
+        ...userUpdate,
+        password: '********'
+      }
+    }catch(error){
+      this.handleDBErrors(error)
+    } 
+  }
+
 
   private getJWT(payload: JwtPayload){
     const token=this.jwtService.sign(payload);

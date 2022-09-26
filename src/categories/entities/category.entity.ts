@@ -1,26 +1,31 @@
-import { User } from "src/auth/entities/user.entity";
-import { Product } from "src/products/entities/product.entity";
+import { User } from "../../auth/entities/user.entity";
+import { Product } from "../../products/entities/product.entity";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Category {
     @PrimaryGeneratedColumn('uuid')
-    id: string;
+    id: string; 
 
     @Column('text', {
         unique: true,
     })
     title: string;
 
+    @Column('text', {
+        default:''
+    })
+    description: string;
+
     @Column('bool',{
         default: true,
     })
-    isActive: boolean;
+    isactive: boolean;
     
 
     @ManyToOne(
-        ()=>User,
-        (user)=>user.product,
+        ()=>User, 
+        (user)=>user.categorie,
         {eager: true} //cargar automaticamente la relación, que en el fron muestre el
     )
     user: User

@@ -45,7 +45,7 @@ export class Product {
     @Column('bool',{
         default: true,
     })
-    isActive: boolean;
+    isactive: boolean;
 
 
     @ManyToOne(

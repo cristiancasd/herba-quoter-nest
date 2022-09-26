@@ -16,7 +16,7 @@ export class CreateUserDto {
 
     @IsString()
     @MinLength(1)
-    fullName: string;
+    fullname: string;
 
     @IsOptional()
     @IsString()
@@ -25,13 +25,13 @@ export class CreateUserDto {
 
     @IsOptional()
     @IsString()
-    @MinLength(1)
-    profilePhoto?: string;
+    @MinLength(1) 
+    profilephoto?: string;
 
     @IsOptional()
     @IsString()
     @MinLength(1)
-    isActive?: boolean;
+    isactive?: boolean;
     
     @IsOptional()
     @IsString()
@@ -44,6 +44,6 @@ export class CreateUserDto {
     @MinLength(1)
     @IsIn(['cliente','cliente-15', 'cliente-25', 'cliente-35',
     'distribuidor-25', 'distribuidor-35','distribuidor-42', 'supervisor'])
-    herbalifeLevel: string;  
+    herbalifelevel: string;  
 }
 
