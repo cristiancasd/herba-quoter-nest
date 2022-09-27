@@ -55,7 +55,6 @@ export class User {
         this.fullname=this.fullname.toUpperCase().trim();
     }
 
-
     @BeforeUpdate()
     checkFieldsBeforeUpdate(){
         this.checkFieldsBeforeInsert()

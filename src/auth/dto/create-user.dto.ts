@@ -38,6 +38,8 @@ export class CreateUserDto {
     @MinLength(1)
     @IsIn(['user','admin','super-admin'])
     rol?: string;
+
+   
     
     
     @IsString()

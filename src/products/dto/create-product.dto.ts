@@ -8,7 +8,7 @@ export class CreateProductDto {
 
     @IsNumber()
     @IsPositive()
-    pricePublic: number;
+    pricepublic: number;
 
     @IsNumber()
     @IsPositive()
@@ -37,5 +37,14 @@ export class CreateProductDto {
     @IsString()
     @IsOptional()
     image?: string;
+
+    @IsString()
+    @MinLength(3)
+    sku: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    categoryId?: string;
 }
 

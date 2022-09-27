@@ -6,7 +6,7 @@ import { ValidRoles } from 'src/auth/interfaces/valid-roles';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto'; 
 
 @Controller('categories') 
 export class CategoriesController {

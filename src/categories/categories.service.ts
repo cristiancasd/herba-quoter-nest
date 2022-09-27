@@ -17,7 +17,14 @@ export class CategoriesService {
   ){}
 
   async create(createCategoryDto: CreateCategoryDto, user: User) {
-    console.log('createCategoryDto', createCategoryDto)
+   
+    const categoryDBconfirm=await this.searchCategoryByTitle(createCategoryDto.title);
+    if(categoryDBconfirm){
+      if(categoryDBconfirm.isactive)
+        throw new BadRequestException(`the category with title "${createCategoryDto.title}" already exists`);
+      throw new BadRequestException(`the category with title "${createCategoryDto.title}" exist, but is inactive, talk with the admin`);
+    } 
+
     try{
       const category=this.categoryRepository.create({
         ...createCategoryDto,
@@ -70,10 +77,8 @@ export class CategoriesService {
 
     if(!categories || categories.length===0 || categories[0]==null) 
       throw new NotFoundException(`Categories with term ${term} not found`);
-      console.log('la categoría es --- ',  categories)    
       
       let result= categories.map(category  =>{
-        console.log('category...',category);
         return category;
         //const {user, ...restCategory}=category;
         //TODO Obtener el usuario en wl Query
@@ -89,6 +94,19 @@ export class CategoriesService {
     } 
   }
 
+
+  async findOneAdmin(term: string) {
+    let category: Category;
+    if (isUUID(term))
+      category=await this.categoryRepository.findOneBy({id: term, isactive: true})     
+
+    if(!category) return null; 
+    return category;
+
+  }
+  
+
+
   async update(id: string, updateCategoryDto: UpdateCategoryDto, user: User) {
     let category=await this.categoryRepository.preload({
       id,
@@ -96,6 +114,15 @@ export class CategoriesService {
     });
     if(!category) throw new NotFoundException(`category with id ${id} not found`)
     if(!category.isactive) throw new BadRequestException(`category with id ${id} is Inactive`);
+
+    if(updateCategoryDto.title){
+      const productDBconfirm=await this.searchCategoryByTitle(updateCategoryDto.title);
+      if(productDBconfirm){
+        if(productDBconfirm.id!=id)
+          throw new BadRequestException(`the category with title "${updateCategoryDto.title}" already exist`);
+      } 
+    }
+
     try{      
       await this.categoryRepository.save({ ...category,user});      
       return category;
@@ -150,6 +177,14 @@ export class CategoriesService {
     }catch(error){
       this.handleDBErrors(error)
     }
+  }
+
+  private async searchCategoryByTitle(title:string){
+    const queryBuilder=this.categoryRepository.createQueryBuilder('us');
+    return await queryBuilder.where('UPPER(title) =:title' ,{
+      title: title.toUpperCase(),
+      })
+      .getOne();     
   }
 
   private handleDBErrors(error: any){

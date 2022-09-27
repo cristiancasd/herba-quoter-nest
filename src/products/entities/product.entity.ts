@@ -1,6 +1,6 @@
 import { User } from 'src/auth/entities/user.entity';
 import { Category } from 'src/categories/entities/category.entity';
-import {Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm'
+import {Column, Entity, PrimaryGeneratedColumn, ManyToOne, BeforeInsert, BeforeUpdate } from 'typeorm'
 
 @Entity()
 export class Product {
@@ -13,7 +13,7 @@ export class Product {
     title: string;
 
     @Column('int')
-    pricePublic:number;
+    pricepublic:number;
 
     @Column('int')
     price15:number;
@@ -42,11 +42,26 @@ export class Product {
     })
     image: string;    
 
+    @Column({
+        type: 'text',
+        unique:true,
+    })
+    sku: string;   
+
     @Column('bool',{
         default: true,
     })
     isactive: boolean;
 
+    @BeforeInsert()
+    checkFieldsBeforeInsert(){
+        this.sku=this.sku.toUpperCase().trim();
+    }
+
+    @BeforeUpdate()
+    checkFieldsBeforeUpdate(){
+        this.checkFieldsBeforeInsert()
+    }
 
     @ManyToOne(
         ()=>User,
