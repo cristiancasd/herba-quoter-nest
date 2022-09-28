@@ -179,6 +179,18 @@ export class CategoriesService {
     }
   }
 
+  async deleteAllCategories(){
+    const query=this.categoryRepository.createQueryBuilder('categorie');
+    try{
+      return await query
+        .delete()
+        .where({})
+        .execute();
+    }catch(error){
+      this.handleDBErrors(error);
+    }
+  }
+
   private async searchCategoryByTitle(title:string){
     const queryBuilder=this.categoryRepository.createQueryBuilder('us');
     return await queryBuilder.where('UPPER(title) =:title' ,{

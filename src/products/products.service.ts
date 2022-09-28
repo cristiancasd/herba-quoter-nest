@@ -26,6 +26,7 @@ export class ProductsService {
 
   async create(createProductDto: CreateProductDto, user: User, idCategory:String) {
     
+    
     const productDBconfirm=await this.searchProductByTitle(createProductDto.title);
       if(productDBconfirm){
         if(productDBconfirm.isactive)
@@ -217,6 +218,21 @@ export class ProductsService {
       this.handleDBErrors(error)
     }
   }
+
+
+  async deleteAllProductos(){
+    const query=this.productRepository.createQueryBuilder('product');
+    try{
+      return await query
+        .delete()
+        .where({})
+        .execute();
+    }catch(error){
+      this.handleDBErrors(error);
+    }
+  }
+
+
 
   private handleDBErrors(error: any){
     if(error.code==='23505')

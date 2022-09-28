@@ -36,6 +36,9 @@ export class Product {
     })
     description: string;    
 
+    @Column('float')
+    pv: number;    
+
     @Column({
         type: 'text',
         default:''

@@ -34,6 +34,10 @@ export class CreateProductDto {
     @IsOptional()
     description?: string;
 
+    @IsNumber()
+    @IsPositive()
+    pv: number;
+
     @IsString()
     @IsOptional()
     image?: string;

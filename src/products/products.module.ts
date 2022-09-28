@@ -15,5 +15,10 @@ import { CategoriesModule } from '../categories/categories.module';
     TypeOrmModule.forFeature([Product]),
     PassportModule.register({defaultStrategy:'jwt'}),    
   ],
+  exports: [
+    ProductsService, 
+    TypeOrmModule
+  ]
+
 })
 export class ProductsModule {}
