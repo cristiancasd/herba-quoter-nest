@@ -1,6 +1,10 @@
+#mine
+/static
+
 # compiled output
 /dist
 /node_modules
+.env
 
 postgres/ 
 /postgres

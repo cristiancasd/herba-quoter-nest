@@ -16,7 +16,7 @@ import { CategoriesModule } from '../categories/categories.module';
     PassportModule.register({defaultStrategy:'jwt'}),    
   ],
   exports: [
-    ProductsService, 
+    ProductsService,  
     TypeOrmModule
   ]
 
