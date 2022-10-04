@@ -1,22 +1,31 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException,} from '@nestjs/common';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { fileNamer } from './helpers/fileNamer';
+import { ProductsService } from '../products/products.service';
+import { User } from 'src/auth/entities/user.entity';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class FilesService {
 
-  create(file: Express.Multer.File, id:string ){
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly authService: AuthService, 
+  ){}
 
-     console.log('create in service', file)
-
-     if(!file) throw new BadRequestException(`file Type is incorrect`) 
-
-     let temporalName=file.originalname
-     const newImageName= fileNamer(temporalName)
-     console.log('newImageName ...',newImageName)
-
-    return file;
+  async updateImage(file: Express.Multer.File, id:string , user: User, colection: string){
+    if(!file) throw new BadRequestException(`file Type is incorrect`);
+    const newImageName= fileNamer(file.originalname);
+    try{
+      //toDO subir imagenes cloudinary
+    }catch(error){}
+    
+    
+    if(colection!='user'&&colection!='product') throw new BadRequestException(`colection "${colection}" is not correct`);
+      return (colection=='product' )
+        ? this.productsService.update(id, {image: newImageName}, user)
+        : this.authService.update(id, {profilephoto: newImageName})
   }
 
   getStaticProductImage(imageName: string){
@@ -25,5 +34,6 @@ export class FilesService {
         throw new BadRequestException(`No product found with image ${imageName}`)  
     return path;
   }
+
 }
 

@@ -17,7 +17,7 @@ import { CategoriesModule } from '../categories/categories.module';
   ],
   exports: [
     ProductsService,  
-    TypeOrmModule
+    TypeOrmModule 
   ]
 
 })
