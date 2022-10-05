@@ -26,7 +26,7 @@ export class CreateUserDto {
     @IsOptional()
     @IsString()
     @MinLength(1) 
-    profilephoto?: string;
+    image?: string;
 
     @IsOptional()
     @IsString()

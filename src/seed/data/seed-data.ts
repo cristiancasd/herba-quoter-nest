@@ -15,7 +15,7 @@ interface SeedProduct {
     price42:number;
     price50:number;
     description: string;    
-    image: string;    
+    //image: string;    
     sku: string;   
     pv: number;
     categoryId:string;
@@ -90,7 +90,7 @@ export const initialData: SeedData = {
             price42:83349,
             price50:74082,
             description: 'Con sabor a Fresas naturales',    
-            image: 'enlace de imagen de batido de fresa',
+            //image: 'enlace de imagen de batido de fresa',
             pv: 23.95,
             sku: 'ABC1', 
             categoryId:''
@@ -106,7 +106,7 @@ export const initialData: SeedData = {
             price42:83349,
             price50:74082,
             description: 'Con sabor a Galletas',    
-            image: 'enlace de imagen de batido de galletas',
+            //image: 'enlace de imagen de batido de galletas',
             pv: 23.95,
             sku: 'ABC2', 
             categoryId:''
@@ -121,7 +121,7 @@ export const initialData: SeedData = {
             price42:83349,
             price50:74082,
             description: 'Con sabor a Bananos naturales',    
-            image: 'enlace de imagen de batido de Banano',
+            //image: 'enlace de imagen de batido de Banano',
             pv: 23.95,
             sku: 'ABC3', 
             categoryId:''
@@ -136,7 +136,7 @@ export const initialData: SeedData = {
             price42:69458,
             price50:61735,
             description: 'Ayuda a tu transido digestivo',    
-            image: 'enlace de imagen Fibra',
+            //image: 'enlace de imagen Fibra',
             pv: 22.95,
             sku: 'ABC4', 
             categoryId:''
@@ -151,7 +151,7 @@ export const initialData: SeedData = {
             price42:84612,
             price50:75205,
             description: 'Beneficios de la sabila para salud del colon',    
-            image: 'enlace de imagen de Aloe',
+            //image: 'enlace de imagen de Aloe',
             pv: 24.95,
             sku: 'ABC5', 
             categoryId:''
@@ -168,7 +168,7 @@ export const initialData: SeedData = {
             price42:83349,
             price50:74082,
             description: 'Con sabor a Fresas naturales',    
-            image: 'enlace de imagen de batido de fresa',
+            //image: 'enlace de imagen de batido de fresa',
             pv: 23.95,
             sku: 'ABC1', 
             categoryId:''
@@ -184,7 +184,7 @@ export const initialData: SeedData = {
             price42:83349,
             price50:74082,
             description: 'Con sabor a Galletas',    
-            image: 'enlace de imagen de batido de galletas',
+            //image: 'enlace de imagen de batido de galletas',
             pv: 23.95,
             sku: 'ABC2', 
             categoryId:''
@@ -199,7 +199,7 @@ export const initialData: SeedData = {
             price42:83349,
             price50:74082,
             description: 'Con sabor a Bananos naturales',    
-            image: 'enlace de imagen de batido de Banano',
+            //image: 'enlace de imagen de batido de Banano',
             pv: 23.95,
             sku: 'ABC3', 
             categoryId:''
@@ -220,7 +220,7 @@ export const initialData: SeedData = {
             price42:69458,
             price50:61735,
             description: 'Ayuda a tu transido digestivo',    
-            image: 'enlace de imagen Fibra',
+            //image: 'enlace de imagen Fibra',
             pv: 22.95,
             sku: 'ABC4', 
             categoryId:''
@@ -235,7 +235,7 @@ export const initialData: SeedData = {
             price42:84612,
             price50:75205,
             description: 'Beneficios de la sabila para salud del colon',    
-            image: 'enlace de imagen de Aloe',
+            //image: 'enlace de imagen de Aloe',
             pv: 24.95,
             sku: 'ABC5', 
             categoryId:''

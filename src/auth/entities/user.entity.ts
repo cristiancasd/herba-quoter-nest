@@ -40,7 +40,7 @@ export class User {
     @Column('text',{ 
         default: '',
     })
-    profilephoto: string;
+    image: string;
 
     @Column('text'    
         //,{default: 'supervisor',}

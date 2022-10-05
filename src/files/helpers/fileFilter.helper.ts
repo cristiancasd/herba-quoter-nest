@@ -1,5 +1,4 @@
 
-// La función tiene la estructura para que se permitido usar en el FileInterceptor
 export const fileFilter=
     (req: Express.Request, file: Express.Multer.File, callback: Function)=>
 {
@@ -13,6 +12,5 @@ export const fileFilter=
     if(validExtensions.includes(fileExtension)){
         return callback(null, true)
     }
-    callback(null,false);
-         
+    callback(null,false);   
 }
