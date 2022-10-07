@@ -4,6 +4,8 @@ import { deleteImageCloudinary, uploadImageCloudinary } from './helpers/uploadIm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from 'src/products/entities/product.entity';
 import { Repository } from 'typeorm';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class FilesService {
@@ -42,6 +44,18 @@ export class FilesService {
       this.handleDBErrors(error)
     }
   }
+
+  getStaticImage(imageName: string, colection: string){
+    if(colection!='product'&&colection!='user') throw new BadRequestException(` No hay colección de imagenes llamada ${colection}`)  
+    let path:string;
+    colection=='product'
+      ? path= join( __dirname, '../../static/products', imageName)
+      : path= join( __dirname, '../../static/users', imageName)
+      if(!existsSync(path))
+      throw new BadRequestException(`No ${colection} found with image ${imageName}`)  
+    return path;
+  }
+  
 
   private handleDBErrors(error: any){
     if(error.code==='23505')

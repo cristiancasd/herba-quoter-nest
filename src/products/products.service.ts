@@ -105,14 +105,16 @@ export class ProductsService {
 
   async findOne(term: string) {
     let products: Product[];
-    const queryBuilder=this.productRepository.createQueryBuilder('us');
+    const queryBuilder=this.productRepository.createQueryBuilder('pro');
     isUUID(term)
       ? products=[await this.productRepository.findOneBy({id: term, isactive: true})]
-      : products=await queryBuilder.where('(UPPER(title) =:title or UPPER(sku) =:sku) and isactive =:isactive' ,{
+      : products=await queryBuilder.where('(UPPER(pro.title) =:title or UPPER(pro.sku) =:sku) and pro.isactive =:isactive' ,{
         title: term.toUpperCase(),
         sku: term.toUpperCase(),
         isactive: true,
         })
+        .leftJoinAndSelect('pro.user','user')
+        .leftJoinAndSelect('pro.categorie','categorie')
         .getMany(); 
        
 
@@ -120,29 +122,17 @@ export class ProductsService {
     if(!products || products.length===0 || products[0]==null) 
       throw new NotFoundException(`Products with term ${term} not found`);
       console.log('products ... ', products)
-      let result= products.map(product  =>{
-        return product;
-        //TODO Obtener el usuario en wl Query
-      }) 
-
-
-    const productById= await this.productRepository.findOneBy({id: result[0].id, isactive: true})
-    const {user, categorie, ...restProduct}=productById;
-    const {id, fullname}=user;
     
-    if(categorie){
-      const{user, isactive, ...restCategorie}=categorie;
-      return {
-        ...restProduct,
-         user:{id, fullname},
-         category: {...restCategorie},        
-      }
-    }
-
-    return {
-      ...restProduct,
-      user:{id,fullname}
-    } 
+      return products.map(product  =>{
+        const {user, categorie, ...restProduct}=product;
+        const {id: userId, fullname}=user
+        const {id: categoryId, title }=categorie
+        return {
+          ...restProduct,
+          user:{userId, fullname},
+          category:{categoryId, title}
+        }
+      }) 
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
@@ -152,6 +142,8 @@ export class ProductsService {
       id,
       ...updateProductDto,
     });
+
+
     if(!product) throw new NotFoundException(`product with id ${id} not found`)
     if(!product.isactive) throw new BadRequestException(`Product with id ${id} is Inactive`);
 

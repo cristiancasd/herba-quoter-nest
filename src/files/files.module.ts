@@ -13,6 +13,9 @@ import { AuthModule } from 'src/auth/auth.module';
     ConfigModule,
     PassportModule.register({defaultStrategy:'jwt'}),   
     ProductsModule, AuthModule,
+  ],
+  exports: [
+    FilesModule
   ]
 })
 export class FilesModule {}

@@ -1,10 +1,10 @@
 import { Controller, Patch, Param, UseInterceptors,
-   UploadedFile, ParseUUIDPipe } from '@nestjs/common';
+   UploadedFile, ParseUUIDPipe, Get, Res } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { FilesService } from './files.service';
 import { fileFilter } from './helpers/fileFilter.helper';
-import { Express } from 'express'
+import { Response, Express } from 'express'
 import { ValidRoles } from 'src/auth/interfaces/valid-roles';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from 'src/auth/entities/user.entity';
@@ -26,4 +26,15 @@ export class FilesController {
   ) {
     return this.filesService.updateImage(file, id, user, colection)
   }
+
+  @Get('/:colection/:imageName')
+  findProductImage(
+    @Res() res: Response, //Mostrar la iamgen, yo me encargo de la respuesta, no NEST
+    @Param('imageName') imageName: string,
+    @Param('colection') colection: string
+  ){
+    const path= this.filesService.getStaticImage(imageName, colection)
+    res.sendFile(path);
+  }
+
 }

@@ -64,34 +64,27 @@ export class CategoriesService {
 
   async findOne(term: string) {
     let categories: Category[];
-    const queryBuilder=this.categoryRepository.createQueryBuilder('us');
+    const queryBuilder=this.categoryRepository.createQueryBuilder('ca');
     isUUID(term)
       ? categories=[await this.categoryRepository.findOneBy({id: term, isactive: true})]
-      : categories=await queryBuilder.where('UPPER(title) =:title and isactive =:isactive' ,{
+      : categories=await queryBuilder.where('UPPER(ca.title) =:title and ca.isactive =:isactive',{
         title: term.toUpperCase(),
-        isactive: true,
-        })
-        .getMany(); 
-       
-
+       isactive: true,
+      })
+      .leftJoinAndSelect('ca.user','user')
+      .getMany()
 
     if(!categories || categories.length===0 || categories[0]==null) 
       throw new NotFoundException(`Categories with term ${term} not found`);
       
-      let result= categories.map(category  =>{
-        return category;
-        //const {user, ...restCategory}=category;
-        //TODO Obtener el usuario en wl Query
+      return categories.map(category  =>{
+        const {user, ...restCategory}=category;
+        const {id,fullname}=user
+        return {
+          ...restCategory,
+          user:{id,fullname}
+        }
       }) 
-
-
-    const categoryById= await this.categoryRepository.findOneBy({id: result[0].id, isactive: true})
-    const {user, ...restCategory}=categoryById;
-    const {id, fullname}=user
-    return {
-      ...restCategory,
-      user:{id,fullname}
-    } 
   }
 
 

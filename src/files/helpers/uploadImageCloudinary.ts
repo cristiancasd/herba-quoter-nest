@@ -29,8 +29,6 @@ export const deleteImageCloudinary=(image: string)=>{
     cloud_name: process.env.CLOUD_NAME,  
     api_secret: process.env.API_SECRET,
   });
-
-
   const nombreArr=image.split('/');
   const nombre=nombreArr[nombreArr.length-1];
   const [public_id] = nombre.split('.');
