@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException,} from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, InternalServerErrorException, GoneException, ForbiddenException,} from '@nestjs/common';
 import { User } from 'src/auth/entities/user.entity';
 import { deleteImageCloudinary, uploadImageCloudinary } from './helpers/uploadImageCloudinary';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,10 +18,16 @@ export class FilesService {
   ){}
 
   async updateImage(file: Express.Multer.File, id:string , user: User, colection: string){
+    
     if(!file) throw new BadRequestException(`file Type is incorrect`);
     
+    if(user.rol=='user' && user.id!=id) throw new ForbiddenException('you do not have authorized');
     if(colection!='user'&&colection!='product') throw new BadRequestException(`colection "${colection}" is not correct`);
     
+    
+
+
+
     let modelo: Product | User;
 
     (colection=='product' )
@@ -29,7 +35,7 @@ export class FilesService {
         : modelo = await this.authRepository.preload({id})   
  
     if(!modelo) throw new NotFoundException(`${colection} with id ${id} not found`)
-    if(!modelo.isactive) throw new BadRequestException(`${colection} with id ${id} is Inactive`);
+    if(!modelo.isactive) throw new GoneException(`${colection} with id ${id} is Inactive`);
     
     if(modelo.image) await deleteImageCloudinary(modelo.image)
     
@@ -37,22 +43,26 @@ export class FilesService {
       throw new BadRequestException('Invalid file type.');
     });
     try{      
-      return (colection=='product' )
-        ? await this.productRepository.save({ ...modelo, image: secure_url ,user})
-        : await this.authRepository.save({ ...modelo, image: secure_url})
+      if(colection=='product' ){
+        const {id,title,image}=await this.productRepository.save({ ...modelo, image: secure_url ,user})
+        return {id, title,image,}
+      }else{
+        const {id,fullname,image}=await this.authRepository.save({ ...modelo, image: secure_url})
+        return {id, fullname,image,}
+      }
     }catch(error){
       this.handleDBErrors(error)
     }
   }
 
   getStaticImage(imageName: string, colection: string){
-    if(colection!='product'&&colection!='user') throw new BadRequestException(` No hay colección de imagenes llamada ${colection}`)  
+    if(colection!='product'&&colection!='user') throw new NotFoundException(` No hay colección de imagenes llamada ${colection}`)  
     let path:string;
     colection=='product'
       ? path= join( __dirname, '../../static/products', imageName)
       : path= join( __dirname, '../../static/users', imageName)
       if(!existsSync(path))
-      throw new BadRequestException(`No ${colection} found with image ${imageName}`)  
+      throw new NotFoundException(`No ${colection} found with image ${imageName}`)  
     return path;
   }
   

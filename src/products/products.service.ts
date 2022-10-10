@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, GoneException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -11,7 +11,7 @@ import { CategoriesService } from '../categories/categories.service';
 
 
 
-
+ 
 
 @Injectable()
 export class ProductsService {
@@ -32,7 +32,7 @@ export class ProductsService {
         if(productDBconfirm.isactive)
           throw new BadRequestException(`the product with title "${createProductDto.title}" already exists`);
      
-        throw new BadRequestException(`the product with title "${createProductDto.title}" exist, but is inactive, talk with the admin`);
+        throw new GoneException(`the product with title "${createProductDto.title}" exist, but is inactive, talk with the admin`);
       } 
 
 
@@ -145,7 +145,7 @@ export class ProductsService {
 
 
     if(!product) throw new NotFoundException(`product with id ${id} not found`)
-    if(!product.isactive) throw new BadRequestException(`Product with id ${id} is Inactive`);
+    if(!product.isactive) throw new GoneException(`Product with id ${id} is Inactive`);
 
     if(updateProductDto.title){
       const productDBconfirm=await this.searchProductByTitle(updateProductDto.title);
@@ -166,7 +166,7 @@ export class ProductsService {
   async remove(id: string, user: User) {
     let product=await this.productRepository.preload({id});
     if(!product) throw new NotFoundException(`product with id ${id} not found`)
-    if(!product.isactive) throw new BadRequestException(`product with id ${id} is Inactive`);
+    if(!product.isactive) throw new GoneException(`product with id ${id} is Inactive`);
     try{
       const productUpdate={
         ...product,
@@ -179,7 +179,7 @@ export class ProductsService {
     }
   }
 
-  async reactive(term: string, user: User) {
+  async activate(term: string, user: User) {
     let product: Product;
     let id=term;
     if(!isUUID(term)){
@@ -198,7 +198,8 @@ export class ProductsService {
     
     if(!product) throw new NotFoundException(`product with id ${id} not found`)
     if(product.isactive) 
-      throw new BadRequestException(`product with id ${id} is active, it don't need to be reactive`);
+      return `product with id ${id} is active, it don't need to be activated`
+      //throw new BadRequestException(`product with id ${id} is active, it don't need to be reactive`);
     try{
       const productUpdate={
         ...product,

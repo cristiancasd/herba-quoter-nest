@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseUUIDPipe } from '@nestjs/common';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from 'src/auth/entities/user.entity';
@@ -7,7 +8,9 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto'; 
-
+import { Category } from './entities/category.entity';
+ 
+@ApiTags('Categories')
 @Controller('categories') 
 export class CategoriesController {
   constructor(
@@ -15,6 +18,10 @@ export class CategoriesController {
     ) {}
 
   @Post()
+  @ApiResponse({status: 201, description: 'Category created', type: Category})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 410, description: 'Category already exist, but it is inactive'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   create(
     @Body() createCategoryDto: CreateCategoryDto,
@@ -23,16 +30,27 @@ export class CategoriesController {
   }
 
   @Get()
+  @ApiResponse({status: 201, description: 'Categories found', type: [Category]})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'Categories not found in DB'})
   findAll(@Query() paginationDto: PaginationDto ) {
     return this.categoriesService.findAll(paginationDto);
   }
 
   @Get(':term')
+  @ApiResponse({status: 201, description: 'Category found', type: Category})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'Category not found in DB'})
   findOne(@Param('term') term: string) {
     return this.categoriesService.findOne(term);
   }
 
   @Patch(':id')
+  @ApiResponse({status: 201, description: 'Category updated', type: Category})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'Category not found in DB'})
+  @ApiResponse({status: 410, description: 'Category is inactive'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   updateCategory(
     @Param('id', ParseUUIDPipe) id: string,  
@@ -42,6 +60,11 @@ export class CategoriesController {
   }
 
   @Delete(':id')
+  @ApiResponse({status: 201, description: 'Category deleted'})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'Category not found in DB'})
+  @ApiResponse({status: 410, description: 'Category is inactive'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   remove(
     @Param('id', ParseUUIDPipe) id: string,  
@@ -50,12 +73,16 @@ export class CategoriesController {
     return this.categoriesService.remove(id, user);
   }
 
-  @Post(':term')
+  @Post('activate/:term')
+  @ApiResponse({status: 201, description: 'Category activated'})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'Category not found in DB'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
-  reactive(
+  activate(
     @Param('term') term: string,  
     //@Body() updateCategoryDto: UpdateCategoryDto,
     @GetUser()user: User) {
-    return this.categoriesService.reactive(term, user);
+    return this.categoriesService.activate(term, user);
   }
 }

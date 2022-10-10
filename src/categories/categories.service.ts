@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, GoneException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/auth/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -22,7 +22,7 @@ export class CategoriesService {
     if(categoryDBconfirm){
       if(categoryDBconfirm.isactive)
         throw new BadRequestException(`the category with title "${createCategoryDto.title}" already exists`);
-      throw new BadRequestException(`the category with title "${createCategoryDto.title}" exist, but is inactive, talk with the admin`);
+      throw new GoneException(`the category with title "${createCategoryDto.title}" exist, but is inactive, talk with the admin`);
     } 
 
     try{
@@ -106,7 +106,7 @@ export class CategoriesService {
       ...updateCategoryDto,
     });
     if(!category) throw new NotFoundException(`category with id ${id} not found`)
-    if(!category.isactive) throw new BadRequestException(`category with id ${id} is Inactive`);
+    if(!category.isactive) throw new GoneException(`category with id ${id} is Inactive`);
 
     if(updateCategoryDto.title){
       const productDBconfirm=await this.searchCategoryByTitle(updateCategoryDto.title);
@@ -127,7 +127,7 @@ export class CategoriesService {
   async remove(id: string, user: User) {
     let category=await this.categoryRepository.preload({id});
     if(!category) throw new NotFoundException(`category with id ${id} not found`)
-    if(!category.isactive) throw new BadRequestException(`category with id ${id} is Inactive`);
+    if(!category.isactive) throw new GoneException(`category with id ${id} is Inactive`);
     try{
       const categoryUpdate={
         ...category,
@@ -140,7 +140,7 @@ export class CategoriesService {
     }
   }
 
-  async reactive(term: string, user: User) {
+  async activate(term: string, user: User) {
     let category: Category;
     let id=term;
     if(!isUUID(term)){
@@ -159,7 +159,8 @@ export class CategoriesService {
     
     if(!category) throw new NotFoundException(`category with id ${id} not found`)
     if(category.isactive) 
-      throw new BadRequestException(`category with id ${id} is active, it don't need to be reactive`);
+      return `category with id ${id} is active, it don't need to be activated`
+      //throw new GoneException(`category with id ${id} is active, it don't need to be reactive`);
     try{
       const categoryUpdate={
         ...category,

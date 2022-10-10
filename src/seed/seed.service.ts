@@ -9,7 +9,7 @@ import { Category } from '../categories/entities/category.entity';
 import { AuthService } from '../auth/auth.service';
 import { deleteImageCloudinary } from 'src/files/helpers/uploadImageCloudinary';
 
-
+ 
 @Injectable()
 export class SeedService {
 
@@ -42,10 +42,15 @@ export class SeedService {
 
 
   private async deleteActualImagesCloudinary(){
-    const users=await this.authService.findAll({limit:100})
-    const products=await this.productsService.findAll({limit:100});
-    users.forEach(async (user)=>await deleteImageCloudinary(user.image));
-    products.forEach(async (product)=>await deleteImageCloudinary(product.image));
+    //todo: Subir las imagenes por carpetas, y borrar todas las fotos de esa carpeta
+    try{
+      const users=await this.authService.findAll({limit:100})
+      users.forEach(async (user)=>await deleteImageCloudinary(user.image));
+    }catch(error){}
+    try{
+      const products=await this.productsService.findAll({limit:100});
+      products.forEach(async (product)=>await deleteImageCloudinary(product.image));
+    }catch(error){}
   }
 
   private async deleteTables(){

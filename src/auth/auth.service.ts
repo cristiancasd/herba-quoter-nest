@@ -1,6 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, InternalServerErrorException, 
+  NotFoundException, UnauthorizedException, GoneException} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
+
 
 import * as bcrypt from 'bcrypt'
 import { InjectRepository } from '@nestjs/typeorm';
@@ -55,7 +57,7 @@ export class AuthService {
       throw new UnauthorizedException('Credentials are not valid (password)')
     
     if(!user.isactive)
-      throw new UnauthorizedException('Inactive User - talk with the admin')
+      throw new GoneException('Inactive User - talk with the admin')
 
       return {
         ...user,
@@ -85,20 +87,25 @@ export class AuthService {
   }  
 
 
-  async findOne(term: string) {
-    
+  async findOne(term: string, user: User) { 
+
     let users: User[];
     const queryBuilder=this.userRepository.createQueryBuilder('us');
     
     isUUID(term)
-      ? users=[await this.userRepository.findOneBy({id: term})]
-      : users=await queryBuilder.where('(email =:email or rol =:rol) and isactive =:isactive',{
+      ? users=[await this.userRepository.findOneBy({id: term,isactive: true})]
+      : users=await queryBuilder.where('(us.email =:email or us.rol =:rol) and us.isactive =:isactive',{
         email: term.toLowerCase(),
         rol: term.toLowerCase(),
         isactive: true,
         })
-        .getMany();        
+        .getMany();      
+    
     if(!users|| users.length==0) throw new NotFoundException(`Users with term ${term} not found`)
+    
+    
+    if(users[0].id!=user.id && user.rol=='user')
+     throw new ForbiddenException('You are trying to get a user that is not yours')
 
     return users.map((user)=>{
       let {password, ...resto}=user;
@@ -114,6 +121,7 @@ export class AuthService {
       id,
       ...toUpdate
     });
+    
     if(!user) throw new NotFoundException(`User with id ${id} not found`)
     try{
       let userUpdate={password:user.password};
@@ -142,7 +150,7 @@ export class AuthService {
     if(!userDB) throw new NotFoundException(`UserDB with id ${id} not found`)  
     
     if (userDB.id!=user.id)
-      throw new UnauthorizedException('You are trying to change a user that is not yours')
+      throw new ForbiddenException('You are trying to change a user that is not yours')
     
     if(!bcrypt.compareSync(password, userDB.password))
       throw new UnauthorizedException('Credentials are not valid (password)')
@@ -178,10 +186,10 @@ export class AuthService {
     let userDB=await this.userRepository.preload({id});
     if(!userDB) throw new NotFoundException(`userDB with id ${id} not found`);
     if(!userDB.isactive) 
-      throw new BadRequestException(`user with id ${id} is inactive, it don't need to be remove`);
+      throw new GoneException(`user with id ${id} is inactive, it don't need to be remove`);
     if(user.rol=='user'){
       if(user.id!=userDB.id) 
-        throw new UnauthorizedException('You are trying to delete a user that is not yours')
+        throw new ForbiddenException('You are trying to delete a user that is not yours')
     }    
     try{
       const userUpdate={
@@ -196,7 +204,7 @@ export class AuthService {
   }
 
 
-  async reactive(term: string) {    
+  async activate(term: string) {    
     let user: User;
     let id=term;
     if(!isUUID(term)){
@@ -214,9 +222,10 @@ export class AuthService {
     let userDB=await this.userRepository.preload({id});    
     if(!userDB) throw new NotFoundException(`userDB with id ${id} not found`)
     if(userDB.isactive) 
-    throw new BadRequestException(`user with id ${id} is active, it don't need to be reactive`);
+      return `user with id ${id} is active, it don't need to be activated`
+    //throw new BadRequestException(`user with id ${id} is active, it don't need to be reactive`);
     try{
-      const userUpdate={
+      const userUpdate={ 
         ...userDB,
        isactive: true,
       }

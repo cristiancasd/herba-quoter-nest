@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Query,ParseUUIDPipe, Headers} from '@nestjs/common';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -7,13 +8,19 @@ import { ValidRoles } from 'src/auth/interfaces/valid-roles';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from 'src/auth/entities/user.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { Product } from './entities/product.entity';
 
+@ApiTags('Products')
 @Controller('products') 
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
  
   @Post()
+  @ApiResponse({status: 201, description: 'Product created', type: Product})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 410, description: 'Product inactive, it was deleted of DB'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   create(
     @Body() createProductDto: CreateProductDto,
@@ -23,16 +30,26 @@ export class ProductsController {
   }
   
   @Get()
+  @ApiResponse({status: 201, description: 'Products found', type: [Product]})
+  @ApiResponse({status: 404, description: 'products not found in DB'})
   findAll(@Query() paginationDto: PaginationDto ) {
     return this.productsService.findAll(paginationDto);
   }
 
   @Get(':term')
+  @ApiResponse({status: 201, description: 'Products found', type: Product})
+  @ApiResponse({status: 404, description: 'products not found in DB'})
+ 
   findOne(@Param('term') term: string) {
     return this.productsService.findOne(term);
   }
 
   @Patch(':id')
+  @ApiResponse({status: 201, description: 'Product updated', type: [Product]})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'product not found in DB'})
+  @ApiResponse({status: 410, description: 'Product inactive, it was deleted of DB'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   updateCategory(
     @Param('id', ParseUUIDPipe) id: string,  
@@ -42,6 +59,11 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiResponse({status: 201, description: 'Product created', type: Product})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'product not found in DB'})
+  @ApiResponse({status: 410, description: 'Product inactive, it was deleted of DB'})
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
   remove(
     @Param('id', ParseUUIDPipe) id: string,  
@@ -49,11 +71,15 @@ export class ProductsController {
     return this.productsService.remove(id, user);
   }
 
-  @Post(':term')
+  @Post('activate/:term')
+  @ApiResponse({status: 201, description: 'Product activated', type: Product})
+  @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 404, description: 'product not found in DB'}) 
+  @ApiBearerAuth('JWT-auth')
   @Auth(ValidRoles.admin, ValidRoles.superAdmin)
-  reactive(
+  activate(
     @Param('term') term: string,  
     @GetUser()user: User) {
-    return this.productsService.reactive(term, user);
+    return this.productsService.activate(term, user);
   }
 }

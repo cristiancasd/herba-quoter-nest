@@ -1,4 +1,5 @@
 #mine
+*.env
 
 # compiled output
 /dist
