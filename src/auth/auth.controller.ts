@@ -113,8 +113,9 @@ export class AuthController {
     return this.authService.activate(term);
   }
 
-  
+
   @Get('check-auth-status')
+  @ApiResponse({status: 201, description: 'Token renoved', type: String})
   @Auth()
   checkAuthStatus(
     @GetUser() user: User
