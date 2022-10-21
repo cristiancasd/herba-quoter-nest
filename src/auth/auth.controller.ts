@@ -113,4 +113,15 @@ export class AuthController {
     return this.authService.activate(term);
   }
 
+  
+  @Get('check-auth-status')
+  @Auth()
+  checkAuthStatus(
+    @GetUser() user: User
+  ){
+    return this.authService.checkAuthStatus(user);
+  }
+
+
+
 }

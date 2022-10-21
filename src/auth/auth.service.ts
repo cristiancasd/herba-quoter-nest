@@ -48,7 +48,7 @@ export class AuthService {
     const {password, email}=loginUserDto;
     const user=await this.userRepository.findOne({
       where: {email},
-      select: {email: true, password: true, isactive: true }, //Si no hago esto no me devuelve la contraseña
+      select: {email: true, password: true, isactive: true, id: true, fullname: true}, //Si no hago esto no me devuelve la contraseña
     });
     if(!user)
       throw new UnauthorizedException('Credentials are not valid (email)')
@@ -61,9 +61,8 @@ export class AuthService {
 
       return {
         ...user,
-        token: this.getJWT({email: user.email})
+        token: this.getJWT({id: user.id})
       };
-  
   }
 
 
@@ -238,6 +237,15 @@ export class AuthService {
     }catch(error){
       this.handleDBErrors(error)
     } 
+  }
+
+  
+
+  async checkAuthStatus(user: User){
+    return {
+      ...user,
+      token: this.getJWT({id: user.id})
+    };
   }
 
 
