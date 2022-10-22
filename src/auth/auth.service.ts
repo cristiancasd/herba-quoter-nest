@@ -37,8 +37,13 @@ export class AuthService {
        password: bcrypt.hashSync(password, 10)
       });
       await this.userRepository.save(user);
+
       const {password:pass, ...resto }=user;
-      return resto;
+      return {
+        user: resto,
+        token: this.getJWT({id: resto.id})
+      };
+
     }catch(error){
       this.handleDBErrors(error)
     }
@@ -69,7 +74,7 @@ export class AuthService {
       throw new GoneException('Inactive User - talk with the admin')
 
       return {
-        ...user,
+        user,
         token: this.getJWT({id: user.id})
       };
   }
@@ -251,8 +256,9 @@ export class AuthService {
   
 
   async checkAuthStatus(user: User){
+    const {password, ...resto }=user;
     return {
-      ...user,
+      user: resto,
       token: this.getJWT({id: user.id})
     };
   }

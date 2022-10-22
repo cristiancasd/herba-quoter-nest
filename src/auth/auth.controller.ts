@@ -8,6 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserToken } from './entities/swagger/user-token.entity';
 import { User } from './entities/user.entity';
 import { ValidRoles } from './interfaces/valid-roles';
 
@@ -17,14 +18,14 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  @ApiResponse({status: 201, description: 'User was created', type: User})
+  @ApiResponse({status: 201, description: 'User was created', type: UserToken})
   @ApiResponse({status: 400, description: 'Bad request'})
   createUser(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);
   }
 
   @Post('login')
-  @ApiResponse({status: 201, description: 'User LOGIN', type: User})
+  @ApiResponse({status: 201, description: 'User LOGIN', type: UserToken})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 401, description: 'Email or Password incorrect'})
   @ApiResponse({status: 410, description: 'User inactive - talk with the admin'})
@@ -90,7 +91,6 @@ export class AuthController {
   @ApiResponse({status: 403, description: 'User no atuthorized'})
   @ApiResponse({status: 404, description: 'Data not found in DB'})
   @ApiResponse({status: 410, description: 'User deleted of DB'})
-
   @ApiBearerAuth('JWT-auth')
   @Auth()  
   remove(
@@ -101,6 +101,7 @@ export class AuthController {
   }
 
   @Post('activate/:term')
+  @ApiBearerAuth('JWT-auth')
   @ApiResponse({status: 201, description: 'User activated', type: User})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'User not found in DB'})
@@ -114,15 +115,14 @@ export class AuthController {
   }
 
 
-  @Get('check-auth-status')
-  @ApiResponse({status: 201, description: 'Token renoved', type: String})
+  @Post('check-renew-token')
+  @ApiBearerAuth('JWT-auth')
+  @ApiResponse({status: 201, description: 'Token renoved', type: UserToken,})
+  @ApiResponse({status: 401, description: 'Invalid Token'})
   @Auth()
   checkAuthStatus(
     @GetUser() user: User
   ){
     return this.authService.checkAuthStatus(user);
   }
-
-
-
 }
