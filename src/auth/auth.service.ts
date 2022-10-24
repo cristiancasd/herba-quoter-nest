@@ -73,8 +73,9 @@ export class AuthService {
     if(!user.isactive)
       throw new GoneException('Inactive User - talk with the admin')
 
+      const {password:pass, ...resto }=user;
       return {
-        user,
+        user: resto,
         token: this.getJWT({id: user.id})
       };
   }

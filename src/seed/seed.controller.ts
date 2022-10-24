@@ -4,7 +4,7 @@ import { SeedService } from './seed.service';
 
 @ApiTags('Seed')
 @Controller('seed') 
-@ApiResponse({status: 201, description: 'Seed Executed', type: String})
+@ApiResponse({status: 200, description: 'Seed Executed', type: String})
 export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 
