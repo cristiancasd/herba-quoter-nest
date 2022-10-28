@@ -29,11 +29,17 @@ export class CategoriesService {
       const category=this.categoryRepository.create({
         ...createCategoryDto,
       });
-      await this.categoryRepository.save({...category, user});
-      return category;
+      const data=await this.categoryRepository.save({...category, user});
+      
+      const {id, fullname}=user;
+      return {
+        id: data.id,
+        ...category,
+        user:{id, fullname}
+      };
 
     }catch(error){
-      this.handleDBErrors(error)
+      this.handleDBErrors(error) 
     }
   }
 
@@ -118,7 +124,11 @@ export class CategoriesService {
 
     try{      
       await this.categoryRepository.save({ ...category,user});      
-      return category;
+      
+      return {
+        ...category,
+        user:{id:user.id, fullname: user.fullname}
+      };
     }catch(error){
       this.handleDBErrors(error)
     }

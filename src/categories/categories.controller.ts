@@ -9,6 +9,7 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto'; 
 import { Category } from './entities/category.entity';
+import { CategorySwagger } from './entities/swagger/categorySwagger.entity';
  
 @ApiTags('Categories')
 @Controller('categories') 
@@ -18,7 +19,7 @@ export class CategoriesController {
     ) {}
 
   @Post()
-  @ApiResponse({status: 201, description: 'Category created', type: Category})
+  @ApiResponse({status: 201, description: 'Category created', type: CategorySwagger})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 410, description: 'Category already exist, but it is inactive'})
   @ApiBearerAuth('JWT-auth')
@@ -30,7 +31,7 @@ export class CategoriesController {
   }
 
   @Get()
-  @ApiResponse({status: 201, description: 'Categories found', type: [Category]})
+  @ApiResponse({status: 200, description: 'Categories found', type: [CategorySwagger]})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'Categories not found in DB'})
   findAll(@Query() paginationDto: PaginationDto ) {
@@ -38,7 +39,7 @@ export class CategoriesController {
   }
 
   @Get(':term')
-  @ApiResponse({status: 201, description: 'Category found', type: Category})
+  @ApiResponse({status: 200, description: 'Category found', type: Category})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'Category not found in DB'})
   findOne(@Param('term') term: string) {
@@ -46,7 +47,7 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @ApiResponse({status: 201, description: 'Category updated', type: Category})
+  @ApiResponse({status: 200, description: 'Category updated', type: CategorySwagger})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'Category not found in DB'})
   @ApiResponse({status: 410, description: 'Category is inactive'})
@@ -60,7 +61,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @ApiResponse({status: 201, description: 'Category deleted'})
+  @ApiResponse({status: 200, description: 'Category deleted'})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'Category not found in DB'})
   @ApiResponse({status: 410, description: 'Category is inactive'})

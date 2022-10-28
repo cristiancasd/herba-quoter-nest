@@ -9,6 +9,7 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from 'src/auth/entities/user.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Product } from './entities/product.entity';
+import { ProductSwagger } from './entities/swagger/productSwagger.entity';
 
 @ApiTags('Products')
 @Controller('products') 
@@ -17,7 +18,7 @@ export class ProductsController {
 
  
   @Post()
-  @ApiResponse({status: 201, description: 'Product created', type: Product})
+  @ApiResponse({status: 201, description: 'Product created', type: ProductSwagger})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 410, description: 'Product inactive, it was deleted of DB'})
   @ApiBearerAuth('JWT-auth')
@@ -30,14 +31,14 @@ export class ProductsController {
   }
   
   @Get()
-  @ApiResponse({status: 201, description: 'Products found', type: [Product]})
+  @ApiResponse({status: 200, description: 'Products found', type: [ProductSwagger]})
   @ApiResponse({status: 404, description: 'products not found in DB'})
   findAll(@Query() paginationDto: PaginationDto ) {
     return this.productsService.findAll(paginationDto);
   }
 
   @Get(':term')
-  @ApiResponse({status: 201, description: 'Products found', type: Product})
+  @ApiResponse({status: 200, description: 'Products found', type: Product})
   @ApiResponse({status: 404, description: 'products not found in DB'})
  
   findOne(@Param('term') term: string) {
@@ -45,8 +46,9 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @ApiResponse({status: 201, description: 'Product updated', type: [Product]})
+  @ApiResponse({status: 200, description: 'Product updated', type: ProductSwagger})
   @ApiResponse({status: 400, description: 'Bad request'})
+  @ApiResponse({status: 403, description: 'User not authorized'})
   @ApiResponse({status: 404, description: 'product not found in DB'})
   @ApiResponse({status: 410, description: 'Product inactive, it was deleted of DB'})
   @ApiBearerAuth('JWT-auth')
@@ -59,7 +61,7 @@ export class ProductsController {
   }
 
   @Delete(':id')
-  @ApiResponse({status: 201, description: 'Product created', type: Product})
+  @ApiResponse({status: 200, description: 'Product deleted'})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'product not found in DB'})
   @ApiResponse({status: 410, description: 'Product inactive, it was deleted of DB'})

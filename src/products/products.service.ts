@@ -10,9 +10,6 @@ import { Category } from '../categories/entities/category.entity';
 import { CategoriesService } from '../categories/categories.service';
 
 
-
- 
-
 @Injectable()
 export class ProductsService {
 
@@ -36,9 +33,7 @@ export class ProductsService {
       } 
 
 
-    try{
-
-      
+    try{      
       let categorie: Category;
       const{categoryId}=createProductDto ;  
       if (isUUID(categoryId))
@@ -47,19 +42,23 @@ export class ProductsService {
       const product=this.productRepository.create({
         ...createProductDto,
       });  
-      await this.productRepository.save({...product, user, categorie});    
+      const data= await this.productRepository.save({...product, user, categorie});    
       
       if (categorie) {
-        const{user, isactive, ...restCategorie}=categorie;
+        const{user: userCategory, isactive, ...restCategorie}=categorie;
         return {
+          id: data.id,
           ...product,  
+          user: {id: user.id, fullname: user.fullname},
           category:{...restCategorie}             
          };
       }     
       
       
       return {
-        ...product,       
+        ...product, 
+        user: {id: user.id, fullname: user.fullname},    
+        category:null  
        };
       
 
@@ -79,8 +78,9 @@ export class ProductsService {
     });
 
     if(!products || products.length===0) 
-        throw new NotFoundException(`Categories dont have data`) 
+        throw new NotFoundException(`Products dont have data`) 
     
+    console.log('los productos son... ', products)
     return products.map((product)=>{
       const {user, categorie, ...restProduct}=product;
       const {id, fullname}=user;
@@ -152,12 +152,26 @@ export class ProductsService {
       if(productDBconfirm){
         if(productDBconfirm.id!=id)
           throw new BadRequestException(`the product with title "${updateProductDto.title}" already exist`);
-      } 
+      }
     }
 
-    try{      
-      await this.productRepository.save({ ...product,user});      
-      return product;
+    try{     
+      let categorie: Category;
+      const{categoryId}=updateProductDto ;  
+      if (isUUID(categoryId))
+      categorie=await this.categoriesService.findOneAdmin(categoryId)
+      
+      
+      await this.productRepository.save({ ...product,user, categorie});
+      
+      const {id:idUser, fullname, ...restoUser}=user;
+      const {id:idCategorie, title, description, ... restCategorie}=categorie;
+      return {
+          ...product,
+          user:{id:idUser,fullname},
+          category:{id:idCategorie, title, description}
+      };
+
     }catch(error){
       this.handleDBErrors(error)
     }
