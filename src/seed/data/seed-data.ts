@@ -81,6 +81,10 @@ export const initialData: SeedData = {
             description: 'Dale a tu cuerpo todos los nutrientes que necesita'
         },
         {
+            title: 'Proteínas',
+            description: 'Salud muscular'
+        },
+        {
             title: 'Salud Digestiva',
             description: 'Productos que te ayudaran a mejorar tu digestión'
         },
@@ -108,7 +112,6 @@ export const initialData: SeedData = {
             pv: 23.95,
             sku: '0146', 
             categoryId:''
-
         },
 
         {
@@ -157,7 +160,7 @@ export const initialData: SeedData = {
             description: 'Ayuda a tu transido digestivo',    
             image: 'fibra.jpg',
             pv: 22.95,
-            sku: '2864', 
+            sku: '2863', 
             categoryId:''
         },
 
@@ -263,7 +266,7 @@ export const initialData: SeedData = {
             description: 'Bebida refrescante de proteína',    
             image: 'beverage.jpg',
             pv: 22.15,
-            sku: '2868', 
+            sku: '2069', 
             categoryId:''
         },
     ],
@@ -278,7 +281,7 @@ export const initialData: SeedData = {
             price42:109300,
             price50:97100,
             description: 'Bebida herbal de té verde, negro y hierbas naturales',    
-            image: 'bebidaHerbal102',
+            image: 'bebidaHerbal102.jpg',
             pv: 34.95,
             sku: '2869', 
             categoryId:''
@@ -292,7 +295,7 @@ export const initialData: SeedData = {
             price42:63800,
             price50:56700,
             description: 'Bebida herbal de té verde, negro y hierbas naturales',    
-            image: 'bebidaHerbal51',
+            image: 'bebidaHerbal51.jpg',
             pv: 19.95,
             sku: '2870', 
             categoryId:''

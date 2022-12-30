@@ -16,7 +16,7 @@ export class FilesController {
   constructor(private readonly filesService: FilesService) {}
 
   @Patch('/:colection/:id')
-  @ApiResponse({status: 201, description: 'Image updated'})
+  @ApiResponse({status: 200, description: 'Image updated'})
   @ApiResponse({status: 400, description: 'Bad request'})
   @ApiResponse({status: 404, description: 'Image link not found in DB'})
   @ApiResponse({status: 410, description: 'Data is inactive, it was deleted of DB'})

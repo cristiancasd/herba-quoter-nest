@@ -10,6 +10,7 @@ import { Category } from '../categories/entities/category.entity';
 import { CategoriesService } from '../categories/categories.service';
 
 
+
 @Injectable()
 export class ProductsService {
 
@@ -68,7 +69,8 @@ export class ProductsService {
   }
 
   async findAll(paginationDto) {
-    const {limit=10, offset=0}=paginationDto;
+    console.log('.......estoy en findAll');
+    const {limit=1000, offset=0}=paginationDto;
     const products=await this.productRepository.find({   
       where: {
         isactive: true,
@@ -76,11 +78,11 @@ export class ProductsService {
       take: limit,
       skip: offset,      
     });
+    console.log('products encotrados',products.length)
 
     if(!products || products.length===0) 
-        throw new NotFoundException(`Products dont have data`) 
+        throw new NotFoundException(`Products dont have data`);
     
-    console.log('los productos son... ', products)
     return products.map((product)=>{
       const {user, categorie, ...restProduct}=product;
       const {id, fullname}=user;
@@ -136,13 +138,10 @@ export class ProductsService {
   }
 
   async update(id: string, updateProductDto: UpdateProductDto, user: User) {
-
- 
     let product=await this.productRepository.preload({
       id,
       ...updateProductDto,
     });
-
 
     if(!product) throw new NotFoundException(`product with id ${id} not found`)
     if(!product.isactive) throw new GoneException(`Product with id ${id} is Inactive`);
@@ -155,23 +154,29 @@ export class ProductsService {
       }
     }
 
-    try{     
+    try{    
+      const {id:idUser, fullname, ...restoUser}=user; 
       let categorie: Category;
       const{categoryId}=updateProductDto ;  
-      if (isUUID(categoryId))
-      categorie=await this.categoriesService.findOneAdmin(categoryId)
-      
-      
-      await this.productRepository.save({ ...product,user, categorie});
-      
-      const {id:idUser, fullname, ...restoUser}=user;
-      const {id:idCategorie, title, description, ... restCategorie}=categorie;
-      return {
+        
+      if (isUUID(categoryId)){
+        categorie=await this.categoriesService.findOneAdmin(categoryId)
+        await this.productRepository.save({ ...product,user, categorie})
+        const {id:idCategorie, title, description, ... restCategorie}=categorie;
+        return {
           ...product,
           user:{id:idUser,fullname},
           category:{id:idCategorie, title, description}
       };
-
+      }else{
+        await this.productRepository.save({ ...product, user})
+        return {
+          ...product,
+          user:{id:idUser,fullname},
+          category:null
+      };
+      }      
+      
     }catch(error){
       this.handleDBErrors(error)
     }
@@ -257,6 +262,3 @@ export class ProductsService {
   }
 
 }
-
-  
-

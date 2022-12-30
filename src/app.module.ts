@@ -29,7 +29,7 @@ import { FilesModule } from './files/files.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
-    AuthModule,
+    AuthModule, 
     ProductsModule,
     CategoriesModule,
     CommonModule,

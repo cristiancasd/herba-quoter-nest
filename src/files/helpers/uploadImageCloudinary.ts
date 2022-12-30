@@ -22,15 +22,21 @@ export const uploadImageCloudinary=
   });
 };
 
-export const deleteImageCloudinary=(image: string)=>{
-
+export const deleteImageCloudinary=async (image: string)=>{
   v2.config({
     api_key: (process.env.API_KEY),
     cloud_name: process.env.CLOUD_NAME,  
     api_secret: process.env.API_SECRET,
   });
-  const nombreArr=image.split('/');
-  const nombre=nombreArr[nombreArr.length-1];
-  const [public_id] = nombre.split('.');
-  v2.uploader.destroy(public_id);
+  try{
+    const nombreArr=image.split('/');
+    const nombre=nombreArr[nombreArr.length-1];
+    const [public_id] = nombre.split('.');
+    console.log('public_id',public_id)
+    const result = await v2.uploader.destroy(public_id);
+    console.log('result',result)
+  }catch(error){
+    console.log('el error en deleteImageCloudinary fue ', error)
+  }
+  return true;
 }

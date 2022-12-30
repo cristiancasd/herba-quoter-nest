@@ -45,7 +45,15 @@ export class FilesService {
     try{      
       if(colection=='product' ){
         const {id,title,image}=await this.productRepository.save({ ...modelo, image: secure_url ,user})
-        return {id, title,image,}
+        return {
+          id, 
+          title,
+          image,
+          user: {
+            id: user.id,
+            fullname: user.fullname
+          },
+        }
       }else{
         const {id,fullname,image}=await this.authRepository.save({ ...modelo, image: secure_url})
         return {id, fullname,image,}

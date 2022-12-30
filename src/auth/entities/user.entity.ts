@@ -87,7 +87,6 @@ export class User {
     herbalifelevel: string;
 
 
-
     @BeforeInsert()
     checkFieldsBeforeInsert(){
         this.email=this.email.toLowerCase().trim();
@@ -103,7 +102,6 @@ export class User {
         ()=>Category,
         (categorie)=>categorie,
         //{eager: true} //cargar automaticamente la relación, que en el fron muestre el
-
     )
     categorie: Category;
 
