@@ -4,17 +4,17 @@
 
 # Herba DB
 
-1. Clonar proyecto
+1. Clone Project
 2. ```yarn install```
-3. Clonar le archivo ```.env.template``` y renombrarlo a ```.env```
-4. Cambiar las variables de entorno
-5. Levantar la base de datos
+3. Clone file ```.env.template``` and rename to ```.env```
+4. Change de environments variables
+5. Launch the data base
 
 ```
 docker-compose up -d
 ```
-6. Levantar: ```yarn start:dev```
-7. Ejecutar SEED
+6. Launch: ```yarn start:dev```
+7. Execute SEED
 ```
 http://localhost:3005/api/seed/
 ```
